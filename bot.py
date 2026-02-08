@@ -6,6 +6,24 @@ import json
 import re
 from datetime import datetime, timedelta, date
 from config import TOKEN
+import os
+from flask import Flask
+from threading import Thread
+
+# ========== WEB SERVER FOR RENDER ==========
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "🤖 Productivity Bot is running!"
+
+def run():
+    port = int(os.environ.get("PORT", 8080))  # Render provides PORT
+    app.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    server = Thread(target=run)
+    server.start()
 
 # ========== CONFIG ==========
 CHALLENGE_CHANNEL_ID = 1469324380231172351   # 🔁 Replace with your challenge channel ID
@@ -141,7 +159,7 @@ async def remind(ctx, *, arg):
 
     reminder_channel = bot.get_channel(REMINDER_CHANNEL_ID)
 
-    await ctx.send(f"⏰ Got it! I’ll remind you to **{task}** at `{remind_time.strftime('%H:%M')}`")
+    await ctx.send(f"⏰ Got it! I'll remind you to **{task}** at `{remind_time.strftime('%H:%M')}`")
 
     async def reminder_task():
         await asyncio.sleep(delay)
@@ -169,4 +187,6 @@ async def challenge_loop():
         await msg.add_reaction("✅")
 
 # ========== RUN ==========
-bot.run(TOKEN)
+if __name__ == "__main__":
+    keep_alive()  # Start the web server
+    bot.run(TOKEN)
